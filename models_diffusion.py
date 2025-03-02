@@ -69,7 +69,7 @@ class DPS:
 
       if show_steps and (t % 100 == 0 or t==999):
         print(f"Iteration = {t}")
-        viewimage(x_start, z=0.5)
+        # viewimage(x_start, z=0.5)
         # viewimage(torch.cat(((x+1)/2, (x_start+1)/2, (x_true+1)/2), dim=3))
 
     return x.detach().clamp(-1., 1.)
