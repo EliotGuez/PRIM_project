@@ -34,8 +34,6 @@ def perform_pnp_pgd(x0,y,  D, fk, nu, likelihood=f, n_iter = 50,
             x = D(x, sigma=strength).detach()
         else:
             x = D.denoise_step(x, t=timestep, a=relax).detach()
-            if it==5:
-                print(torch.min(x), torch.max(x), torch.mean(x))
 
         metrics['psnr'].append(psnr(x0, x))
         metrics['residual'].append((torch.linalg.norm(x.detach() - xpre) / torch.linalg.norm(x0)).cpu())

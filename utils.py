@@ -140,14 +140,33 @@ def save_psnr(psnr, titre):
     plt.savefig(f"results/{titre}.png", dpi='figure', bbox_inches='tight')
     plt.show()
 
-def plot_lipschitz_comparison(lip_constants_1, lip_constants_2, model_name_1, model_name_2, title = ''):
-    """Plot comparison of Lipschitz constants between models"""
+# def plot_lipschitz_comparison(lip_constants_1, lip_constants_2, model_name_1, model_name_2, title = ''):
+#     """Plot comparison of Lipschitz constants between models"""
+#     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+#     ax.hist(lip_constants_1, bins=20, alpha=0.5, label=model_name_1, density=True)
+#     ax.hist(lip_constants_2, bins=20, alpha=0.5, label=model_name_2, density=True)
+
+#     ax.set_title(f"Lipschitz Constant Comparison")
+#     ax.set_xlabel("Lipschitz Constant")
+#     ax.legend()
+#     plt.savefig(f"results/{title}.png", dpi='figure', bbox_inches='tight')
+#     plt.show()
+def plot_lipschitz_comparison(lip_constants_1, lip_constants_2, model_name_1, model_name_2, title=''):
+    """Plot comparison of Lipschitz constants between models and print bin sizes"""
     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-    # do a histogram for each model
-    ax.hist(lip_constants_1, bins=20, alpha=0.5, label=model_name_1)
-    ax.hist(lip_constants_2, bins=20, alpha=0.5, label=model_name_2)
-    ax.set_title(f"Lipschitz Constant Comparison")
+
+    counts_1, bins_1, _ = ax.hist(lip_constants_1, bins=20, alpha=0.5, label=model_name_1, density=True)
+    counts_2, bins_2, _ = ax.hist(lip_constants_2, bins=20, alpha=0.5, label=model_name_2, density=True)
+
+    bin_size_1 = bins_1[1] - bins_1[0]
+    bin_size_2 = bins_2[1] - bins_2[0]
+
+    print(f"Bin size for {model_name_1}: {bin_size_1}")
+    print(f"Bin size for {model_name_2}: {bin_size_2}")
+
+    ax.set_title(f"{title}")
     ax.set_xlabel("Lipschitz Constant")
     ax.legend()
+    
     plt.savefig(f"results/{title}.png", dpi='figure', bbox_inches='tight')
     plt.show()
