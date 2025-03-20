@@ -9,5 +9,5 @@ inpainting.ipynb
 pnp_ddpm.ipynb
 real_and_blurry_images.png
 __pycache__/
-
+restoration_results/
 

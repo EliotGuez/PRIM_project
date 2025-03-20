@@ -14,13 +14,15 @@ class DDPMPNP:
         self.betas = np.linspace(beta_start, beta_end, self.num_diffusion_timesteps, dtype=np.float64)
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = np.cumprod(self.alphas, axis=0)
+        self.sqrt_1_minus_alphas_cumprod = np.sqrt(1 - self.alphas_cumprod)
 
-    def denoise_step(self, x, t=None, a=0.3):
-        if t is None: 
-            t = self.fixed_t
-        eps = self.model(x, torch.tensor(t, device=x.device).unsqueeze(0))
+    def get_timestep_from_sigma(self, sigma):
+        return int(np.argmin(np.abs(self.sqrt_1_minus_alphas_cumprod - sigma)))
+    
+    def denoise_step(self, x, t=1, a=1):
+        eps = self.model(self.alphas_cumprod[t] *x, torch.tensor(t, device=x.device).unsqueeze(0))
         eps = eps[:,:3,:,:]
-        x_start = x - a * np.sqrt(1 - self.alphas_cumprod[t]) * eps
+        x_start = x - a * np.sqrt(1 - self.alphas_cumprod[t])/ np.sqrt(self.alphas_cumprod[t]) * eps
         return x_start 
 
 class DPS:

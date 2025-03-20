@@ -66,12 +66,40 @@ def viewimages(images, iter, normalize=True, vmin=0, vmax=1, z=2, order=0, titre
             axes[i].set_title(f"Iter {i}")
     plt.savefig(f"results/{titre}.png", dpi='figure', bbox_inches='tight')
     plt.show()
+def viewimages_2(images, iter, normalize=True, vmin=0, vmax=1, z=2, order=0, titre='', psnr=None):
 
+    fig, axes = plt.subplots(1, len(images), figsize=(18, 12))    
+    
+    for i, img in enumerate(images):
+        img = img.detach().cpu().squeeze().permute(1, 2, 0).numpy()  # Move channels to last dim
+        
+        img = rescale(img, z, order=order, channel_axis=2 if img.ndim == 3 else None)
+        if normalize:
+            img = np.clip((img - vmin) / (vmax - vmin), 0, 1)
+        axes[i].imshow(img, cmap='gray', vmin=0, vmax=1)
+        axes[i].axis('off')
+        
+        if psnr is not None:
+            if i == len(images) - 1:
+                axes[i].set_title(f"Original Image")
+            else:
+                axes[i].set_title(f"PSNR: {psnr[iter[i]]:.2f}, Iter {iter[i]}")
+        else:
+            axes[i].set_title(f"Iter {i}")
+    
+    # Save and show figure
+    plt.savefig(f"results/{titre}.png", dpi='figure', bbox_inches='tight')
+    plt.show()
 def A(x, fk): 
     return ifft2(fft2(x) * fk).real
 
 def f(x, y, nu, fk): 
     return 1/ (2 *nu**2) * torch.sum((A(x, fk) - y)**2)
+
+def forward(x, mask):
+    return x * mask
+def inpainting(x,y, nu, mask):
+    return 1/ (2 *nu**2) * torch.sum((forward(x, mask) - y)**2)
 
 #### KERNEL AND DATASET LOADING ####
 def load_kernel(kt,M,N,device):
@@ -140,14 +168,33 @@ def save_psnr(psnr, titre):
     plt.savefig(f"results/{titre}.png", dpi='figure', bbox_inches='tight')
     plt.show()
 
-def plot_lipschitz_comparison(lip_constants_1, lip_constants_2, model_name_1, model_name_2, title = ''):
-    """Plot comparison of Lipschitz constants between models"""
+# def plot_lipschitz_comparison(lip_constants_1, lip_constants_2, model_name_1, model_name_2, title = ''):
+#     """Plot comparison of Lipschitz constants between models"""
+#     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+#     ax.hist(lip_constants_1, bins=20, alpha=0.5, label=model_name_1, density=True)
+#     ax.hist(lip_constants_2, bins=20, alpha=0.5, label=model_name_2, density=True)
+
+#     ax.set_title(f"Lipschitz Constant Comparison")
+#     ax.set_xlabel("Lipschitz Constant")
+#     ax.legend()
+#     plt.savefig(f"results/{title}.png", dpi='figure', bbox_inches='tight')
+#     plt.show()
+def plot_lipschitz_comparison(lip_constants_1, lip_constants_2, model_name_1, model_name_2, title=''):
+    """Plot comparison of Lipschitz constants between models and print bin sizes"""
     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-    # do a histogram for each model
-    ax.hist(lip_constants_1, bins=20, alpha=0.5, label=model_name_1)
-    ax.hist(lip_constants_2, bins=20, alpha=0.5, label=model_name_2)
-    ax.set_title(f"Lipschitz Constant Comparison")
+
+    counts_1, bins_1, _ = ax.hist(lip_constants_1, bins=20, alpha=0.5, label=model_name_1, density=True)
+    counts_2, bins_2, _ = ax.hist(lip_constants_2, bins=20, alpha=0.5, label=model_name_2, density=True)
+
+    bin_size_1 = bins_1[1] - bins_1[0]
+    bin_size_2 = bins_2[1] - bins_2[0]
+
+    print(f"Bin size for {model_name_1}: {bin_size_1}")
+    print(f"Bin size for {model_name_2}: {bin_size_2}")
+
+    ax.set_title(f"{title}")
     ax.set_xlabel("Lipschitz Constant")
     ax.legend()
+    
     plt.savefig(f"results/{title}.png", dpi='figure', bbox_inches='tight')
     plt.show()
