@@ -16,16 +16,10 @@ class DDPMPNP:
         self.alphas_cumprod = np.cumprod(self.alphas, axis=0)
         self.sqrt_1_minus_alphas_cumprod = np.sqrt(1 - self.alphas_cumprod)
 
-<<<<<<< HEAD
     def get_timestep_from_sigma(self, sigma):
         return int(np.argmin(np.abs(self.sqrt_1_minus_alphas_cumprod - sigma)))
     
     def denoise_step(self, x, t=1, a=1):
-=======
-    def denoise_step(self, x, t=None, a=0.3):
-        if t is None: 
-            t = self.fixed_t
->>>>>>> b18015ee9c383af105f60785a81f365e75b3b629
         eps = self.model(self.alphas_cumprod[t] *x, torch.tensor(t, device=x.device).unsqueeze(0))
         eps = eps[:,:3,:,:]
         x_start = x - a * np.sqrt(1 - self.alphas_cumprod[t])/ np.sqrt(self.alphas_cumprod[t]) * eps
